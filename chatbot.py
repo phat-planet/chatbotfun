@@ -6,8 +6,6 @@ from playsound import playsound
 import logging
 import random
 
-logging.basicConfig(level=logging.INFO)
-
 # we have to define when the bot will give the time
 time_positive = ['what is the time right now', 'time', 'clock', 'what is the current time', 'what is the time now',
                  'what’s the time', 'what time is it',
@@ -47,32 +45,59 @@ bot = ChatBot(  # defining properties and attributes
     ],
     database_url='sqlite:///database.sqlite3'
 )
+print('Starting bot. . . . ')
 
-print('Training bot. . . . . .')
-playsound('startup.wav')
-trainer = ChatterBotCorpusTrainer(bot)
-trainer.train(
-    "chatterbot.corpus.english"
-)
+while True:
+    choice = input("Would you like to train the bot? Enter Y/N: ")  # train bot option
+    if choice == 'Y' or choice == 'y' or choice == 'yes':
+        print('Training bot. . . . . .')
+        trainer = ChatterBotCorpusTrainer(bot)
+        trainer.train(
+            "chatterbot.corpus.english"
+        )
+        break
+    if choice == 'N' or choice == 'n' or choice == 'no':
+        break
+
+while True:
+    choice = input('Enable logging? Enter Y/N: ')  # logging option
+    if choice == 'Y' or choice == 'y' or choice == 'yes':
+        logging.basicConfig(level=logging.INFO)  # enable logging
+        break
+    if choice == 'N' or choice == 'n' or choice == 'no':
+        break
+
+while True:
+    choice = input('Enable sound? Enter Y/N: ')  # sfx option
+    if choice == 'Y' or choice == 'y' or choice == 'yes':
+        sfx = True
+        break
+    if choice == 'N' or choice == 'n' or choice == 'no':
+        sfx = False
+        break
 
 name = input('Please enter your name: ')  # we want the user's name
+if sfx:
+    playsound('startup.wav')
 print('Spork is now active')
 
 while True:
     try:
 
         request = (input(name + ': '))
-        # if you say these things to the bot, it will quit
-        time.sleep(random.randint(1, 4))
-        if request == "Bye" or request == 'bye' or request == 'shut up':
-            print('Spork: Bye')
-            playsound('shutdown.wav')
+
+        time.sleep(random.randint(1, 4))  # small delay, so the bot will act like it's "thinking"
+        if request == "Bye" or request == 'bye' or request == 'goodbye' or request == 'Goodbye' or request == 'shut up':
+            print('Spork: Bye. Shutting down. . . .') # if you say these things to the bot, it will quit
+            if sfx:
+                playsound('shutdown.wav')
             break
         else:
             response = bot.get_response(request)
             print("spork: ", end='')
             print(response)
-            playsound('message.wav')
+            if sfx:
+                playsound('message.wav')
 
     except(KeyboardInterrupt, EOFError, SystemExit):
         break
