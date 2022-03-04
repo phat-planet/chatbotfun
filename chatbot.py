@@ -1,10 +1,20 @@
 import time
 
 from chatterbot import ChatBot
-from chatterbot.trainers import ChatterBotCorpusTrainer
+from chatterbot.trainers import ChatterBotCorpusTrainer, ListTrainer
 from playsound import playsound
+from gtts import gTTS
+import os
 import logging
 import random
+
+
+def text2speech(tts):
+    speech = gTTS(text=tts, lang='en', slow=False)
+    speech.save("talk.mp3")
+    playsound("talk.mp3")
+    os.remove("talk.mp3")
+
 
 # we have to define when the bot will give the time
 time_positive = ['what is the time right now', 'time', 'clock', 'what is the current time', 'what is the time now',
@@ -21,6 +31,10 @@ time_negative = ['what are you doing', 'what’s up', 'when is time', 'who is ti
                  'when', 'what is', 'how',
                  'how is', 'when is', 'who is time', 'how is time', 'how is time', 'when is time']
 
+bad_words = ['jabroni', 'doofus', 'dumbass', 'pinhead']  # the bot will not say phrases containing these words
+
+name = input('Please enter your name: ')  # we want the user's name
+
 bot = ChatBot(  # defining properties and attributes
     'spork',
     storage_adapter='chatterbot.storage.SQLStorageAdapter',  # this defines the database the bot will use to learn
@@ -31,10 +45,22 @@ bot = ChatBot(  # defining properties and attributes
     ],
     logic_adapters=[
         {
+            'import_path': 'chatterbot.logic.SpecificResponseAdapter',  # This logic adapter doesn't work
+            'input_text': 'What is my name?',
+            'output_text': ('Your name is ' + name + '.')
+        },
+        {
+            'import_path': 'chatterbot.logic.SpecificResponseAdapter',  # This logic adapter doesn't work
+            'input_text': 'What is your name?',
+            'output_text': 'My name is Spork, at the moment.'
+        },
+        {
             'import_path': 'chatterbot.logic.BestMatch',  # if the bot can't think of a response, it will give a
             'default_response': 'Sorry, I don\'t quite understand.',  # default response
-            'maximum_similarity_threshold': 0.75
+            'maximum_similarity_threshold': 0.75,
+            'excluded_words': bad_words
         },
+
         'chatterbot.logic.MathematicalEvaluation',  # this gives the bot the ability to solve math equations
         {
             'import_path': 'chatterbot.logic.TimeLogicAdapter',  # this gives the bot the ability to tell time
@@ -43,18 +69,40 @@ bot = ChatBot(  # defining properties and attributes
         }
 
     ],
-    database_url='sqlite:///database.sqlite3'
+    database_url='sqlite://database.sqlite3'
 )
 print('Starting bot. . . . ')
 
 while True:
     choice = input("Would you like to train the bot? Enter Y/N: ")  # train bot option
     if choice == 'Y' or choice == 'y' or choice == 'yes':
+        ##################################
+        #           BOT TRAINING         #
+        ##################################
         print('Training bot. . . . . .')
+        trainer = ListTrainer(bot)
+        # list trainer
+        trainer.train([
+            "Hello",
+            "Hi there!",
+            "How are you doing?",
+            "I'm doing great.",
+            "That is good to hear",
+            "Thank you.",
+            "You're welcome."
+        ])
+        trainer.train([  # this is for testing excluded words, the bot isn't supposed to insult you!
+            "Insult me",
+            "You're a dumbass."
+        ])
+
         trainer = ChatterBotCorpusTrainer(bot)
         trainer.train(
-            "chatterbot.corpus.english"
+            "chatterbot.corpus.custom"
         )
+        ##################################
+        #         END OF TRAINING        #
+        ##################################
         break
     if choice == 'N' or choice == 'n' or choice == 'no':
         break
@@ -76,7 +124,15 @@ while True:
         sfx = False
         break
 
-name = input('Please enter your name: ')  # we want the user's name
+while True:
+    choice = input('Enable text to speech? Enter Y/N: ')  # tts option
+    if choice == 'Y' or choice == 'y' or choice == 'yes':
+        voice = True
+        break
+    if choice == 'N' or choice == 'n' or choice == 'no':
+        voice = False
+        break
+
 if sfx:
     playsound('startup.wav')
 print('Spork is now active')
@@ -86,9 +142,11 @@ while True:
 
         request = (input(name + ': '))
 
-        time.sleep(random.randint(1, 4))  # small delay, so the bot will act like it's "thinking"
+        # time.sleep(random.randint(1, 4))  # small delay, so the bot will act like it's "thinking"
         if request == "Bye" or request == 'bye' or request == 'goodbye' or request == 'Goodbye' or request == 'shut up':
-            print('Spork: Bye. Shutting down. . . .') # if you say these things to the bot, it will quit
+            print('Spork: Bye. Shutting down. . . .')  # if you say these things to the bot, it will quit
+            if voice:
+                text2speech('Bye. Shutting down')
             if sfx:
                 playsound('shutdown.wav')
             break
@@ -98,6 +156,8 @@ while True:
             print(response)
             if sfx:
                 playsound('message.wav')
-
+            if voice:
+                tts = (str(response))
+                text2speech(tts)
     except(KeyboardInterrupt, EOFError, SystemExit):
         break
