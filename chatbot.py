@@ -29,7 +29,8 @@ time_negative = ['what are you doing', 'what’s up', 'when is time', 'who is ti
                  'will you', 'tell me', 'show me', 'current', 'do', 'now',
                  'will', 'show', 'tell', 'me', 'could', 'what', 'whats', 'i have time', 'who', 'who is', 'hardtime',
                  'when', 'what is', 'how',
-                 'how is', 'when is', 'who is time', 'how is time', 'how is time', 'when is time']
+                 'how is', 'when is', 'who is time', 'how is time', 'how is time', 'when is time', 'it is ok',
+                 'you do not need to do that']
 
 bad_words = ['jabroni', 'doofus', 'dumbass', 'pinhead']  # the bot will not say phrases containing these words
 
@@ -44,13 +45,14 @@ bot = ChatBot(  # defining properties and attributes
         'chatterbot.preprocessors.convert_to_ascii'
     ],
     logic_adapters=[
+
         {
-            'import_path': 'chatterbot.logic.SpecificResponseAdapter',  # This logic adapter doesn't work
+            'import_path': 'chatterbot.logic.SpecificResponseAdapter',
             'input_text': 'What is my name?',
             'output_text': ('Your name is ' + name + '.')
         },
         {
-            'import_path': 'chatterbot.logic.SpecificResponseAdapter',  # This logic adapter doesn't work
+            'import_path': 'chatterbot.logic.SpecificResponseAdapter',
             'input_text': 'What is your name?',
             'output_text': 'My name is Spork, at the moment.'
         },
@@ -62,6 +64,9 @@ bot = ChatBot(  # defining properties and attributes
         },
 
         'chatterbot.logic.MathematicalEvaluation',  # this gives the bot the ability to solve math equations
+        {
+            'import_path': 'mood_adapter.MoodAdapter'
+        },
         {
             'import_path': 'chatterbot.logic.TimeLogicAdapter',  # this gives the bot the ability to tell time
             'positive': time_positive,
@@ -94,6 +99,25 @@ while True:
         trainer.train([  # this is for testing excluded words, the bot isn't supposed to insult you!
             "Insult me",
             "You're a dumbass."
+        ])
+        trainer.train([
+            "Ask me about my mood",
+            "How are you feeling?",
+            "I am feeling",
+            "So you're feeling? Did I get that right",
+            "Yes",
+            "Great!"
+        ])
+        trainer.train([
+            "Ask how I'm feeling",
+            "How are you feeling?"
+        ])
+        trainer.train([
+            "How are you feeling?",
+            "I am feeling",
+            "So you're feeling? Did I get that right",
+            "No",
+            "Oh. That's ok, I'm still learning."
         ])
 
         trainer = ChatterBotCorpusTrainer(bot)
