@@ -1,4 +1,7 @@
 import time
+from threading import Thread
+from difflib import SequenceMatcher
+from EmotionDetect_HaarCascade import EmotionDetect_HaarCacasde
 
 from chatterbot import ChatBot
 from chatterbot.trainers import ChatterBotCorpusTrainer, ListTrainer
@@ -7,6 +10,8 @@ from gtts import gTTS
 import os
 import logging
 import random
+
+global mood
 
 
 def text2speech(tts):
@@ -65,6 +70,9 @@ bot = ChatBot(  # defining properties and attributes
 
         'chatterbot.logic.MathematicalEvaluation',  # this gives the bot the ability to solve math equations
         {
+            'import_path': 'camera_adapter.CameraAdapter'
+        },
+        {
             'import_path': 'mood_adapter.MoodAdapter'
         },
         {
@@ -77,6 +85,7 @@ bot = ChatBot(  # defining properties and attributes
     database_url='sqlite://database.sqlite3'
 )
 print('Starting bot. . . . ')
+# Thread(target=start_camera).start()
 
 while True:
     choice = input("Would you like to train the bot? Enter Y/N: ")  # train bot option
