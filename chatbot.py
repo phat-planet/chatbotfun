@@ -59,7 +59,7 @@ bot = ChatBot(  # defining properties and attributes
         {
             'import_path': 'chatterbot.logic.SpecificResponseAdapter',
             'input_text': 'What is your name?',
-            'output_text': 'My name is Spork, at the moment.'
+            'output_text': 'I don\'t have one, at the moment.'
         },
         {
             'import_path': 'chatterbot.logic.BestMatch',  # if the bot can't think of a response, it will give a
@@ -72,9 +72,9 @@ bot = ChatBot(  # defining properties and attributes
         {
             'import_path': 'camera_adapter.CameraAdapter'
         },
-        {
-            'import_path': 'mood_adapter.MoodAdapter'
-        },
+        #{
+         #   'import_path': 'mood_adapter.MoodAdapter'
+       # },
         {
             'import_path': 'chatterbot.logic.TimeLogicAdapter',  # this gives the bot the ability to tell time
             'positive': time_positive,
@@ -168,7 +168,7 @@ while True:
 
 if sfx:
     playsound('startup.wav')
-print('Spork is now active')
+print('Chatbot is now active')
 
 while True:
     try:
@@ -177,7 +177,7 @@ while True:
 
         # time.sleep(random.randint(1, 4))  # small delay, so the bot will act like it's "thinking"
         if request == "Bye" or request == 'bye' or request == 'goodbye' or request == 'Goodbye' or request == 'shut up':
-            print('Spork: Bye. Shutting down. . . .')  # if you say these things to the bot, it will quit
+            print('Chatbot: Bye. Shutting down. . . .')  # if you say these things to the bot, it will quit
             if voice:
                 text2speech('Bye. Shutting down')
             if sfx:
@@ -185,7 +185,7 @@ while True:
             break
         else:
             response = bot.get_response(request)
-            print("spork: ", end='')
+            print("Chatbot: ", end='')
             print(response)
             if sfx:
                 playsound('message.wav')

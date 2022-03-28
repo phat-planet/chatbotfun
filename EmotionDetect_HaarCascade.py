@@ -3,12 +3,10 @@ import cv2
 import tensorflow as tf
 from tensorflow import keras
 from keras.models import load_model
-from keras.preprocessing.image import img_to_array
-from keras.preprocessing import image
+# from keras.preprocessing.image import img_to_array
+# from keras.preprocessing import image
 import numpy as np
 import os
-
-global mood
 
 
 class EmotionDetect_HaarCacasde:
@@ -16,9 +14,14 @@ class EmotionDetect_HaarCacasde:
     def __init__(self):
         self.fC = None
         self.eC = None
-        self.eL = ['angry', 'disgust', 'fear', 'happy', 'neutral', 'sad', 'surprise']
+        self.eL = ['angry', 'disgusted', 'fearful', 'happy', 'neutral', 'sad', 'surprised']  # Original
+        # self.eL = ['Angry','Disgust','Fear','Happy','Sad','Surprise','Neutral'] #Possible Alternate
         self.emotion = None
         self.emotionWeights = None
+
+        self.predictedNPasArray = None
+        self.predictedRESHAPE = None
+        self.predictedExpandedDim = None
 
     def model_loading(self):
         dir = os.getcwd()
@@ -26,9 +29,9 @@ class EmotionDetect_HaarCacasde:
 
         self.fC = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
         self.eC = load_model(dir + '\\model.h5')
+        # self.eC =load_model(dir + '\\actual_best_model.h5')
 
     def emotion_detect_run(self):
-
         cap = cv2.VideoCapture(0)  # start webcam capture
 
         while True:  # endless loop until key 'q' is pressed
@@ -46,24 +49,35 @@ class EmotionDetect_HaarCacasde:
                 if np.sum([roi_gray]) != 0:  # if a face(s) is detected
                     roi = roi_gray.astype(
                         'float') / 255.0  # normalize by dividing Region of Intererst of by 255 (the greatest possible value when dealing with grayscale, 255=white)
-                    roi = img_to_array(roi)  # place captured Region of Interest image into an array to be used by model
-                    roi = np.expand_dims(roi,
-                                         axis=0)  # make sure Region of Interest array is in mxn format (1xn in this case)
+                    toBePredicted = np.asarray(roi,
+                                               dtype=np.float32)  # converting Region of Interest into a float 32 array. It is in the form of (1, 48, 48)
 
-                    prediction = self.eC.predict(roi)[
+                    self.predictedNPasArray = toBePredicted
+
+                    toBePredicted = toBePredicted.reshape((toBePredicted.shape[0], toBePredicted.shape[1],
+                                                           1))  # Reshape region on interest array into the form of (48, 48, 1)
+
+                    self.predictedRESHAPE = toBePredicted
+
+                    toBePredicted = np.expand_dims(roi,
+                                                   axis=0)  # make sure Region of Interest array is in mxn format (1xn in this case). Now in the form of (48, 48)
+
+                    self.predictedExpandedDim = toBePredicted
+
+                    prediction = self.eC.predict(toBePredicted)[
                         0]  # use model to predict if Region of Interest image presents specific emotion
                     label = self.eL[
                         prediction.argmax()]  # take the highest probabilty of emotion detected and get self.eL index and assign it to label. ex: higest number index in [0.1335, 0.0066, 0.1249, 0.0045, 0.4689, 0.24390, .01795] is index 4 or "Neutral"
                     self.emotionWeights = prediction  # assign model prediction weights for emotion classification for extraction use
                     self.emotion = label  # assign that emotion from self.eL to self.emotion for extraction use
-                    # print(self.emotion)
+                    #print(self.emotion)
                     label_position = (x, y)
                     cv2.putText(frame, label, label_position, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0),
                                 2)  # print label name near Region of Interest
                 else:
                     cv2.putText(frame, 'No Faces', (30, 80), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0),
                                 2)  # print 'No faces' if no faces are detected
-            # cv2.imshow('Emotion Detector', frame)  # show box drawn and emotion identified around face(s) detected
+            cv2.imshow('Emotion Detector', frame)  # show box drawn and emotion identified around face(s) detected
             #if cv2.waitKey(1) & 0xFF == ord('q'):  # press 'q' key to terminate program
             break
 
