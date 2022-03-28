@@ -21,22 +21,6 @@ def text2speech(tts):
     os.remove("talk.mp3")
 
 
-# we have to define when the bot will give the time
-time_positive = ['what is the time right now', 'time', 'clock', 'what is the current time', 'what is the time now',
-                 'what’s the time', 'what time is it',
-                 'what time is it now', 'do you know what time it is', 'could you tell me the time, please',
-                 'what is the time', 'will you tell me the time',
-                 'tell me the time', 'time please', 'show me the time', 'what is time', 'whats on the clock',
-                 'show me the clock',
-                 'what is the time', 'what is on the clock', 'tell me time', 'time', 'clock', ]
-
-time_negative = ['what are you doing', 'what’s up', 'when is time', 'who is time' 'could you', 'do you', 'what’s',
-                 'will you', 'tell me', 'show me', 'current', 'do', 'now',
-                 'will', 'show', 'tell', 'me', 'could', 'what', 'whats', 'i have time', 'who', 'who is', 'hardtime',
-                 'when', 'what is', 'how',
-                 'how is', 'when is', 'who is time', 'how is time', 'how is time', 'when is time', 'it is ok',
-                 'you do not need to do that']
-
 bad_words = ['jabroni', 'doofus', 'dumbass', 'pinhead']  # the bot will not say phrases containing these words
 
 name = input('Please enter your name: ')  # we want the user's name
@@ -52,19 +36,21 @@ bot = ChatBot(  # defining properties and attributes
     logic_adapters=[
 
         {
-            'import_path': 'chatterbot.logic.SpecificResponseAdapter',
+            'import_path': 'similar_response.SimilarResponseAdapter',
             'input_text': 'What is my name?',
-            'output_text': ('Your name is ' + name + '.')
+            'output_text': ('Your name is ' + name + '.'),
+            'similarity_threshold': 0.7
         },
         {
-            'import_path': 'chatterbot.logic.SpecificResponseAdapter',
+            'import_path': 'similar_response.SimilarResponseAdapter',
             'input_text': 'What is your name?',
-            'output_text': 'I don\'t have one, at the moment.'
+            'output_text': 'I don\'t have one, at the moment.',
+            'similarity_threshold': 0.7
         },
         {
             'import_path': 'chatterbot.logic.BestMatch',  # if the bot can't think of a response, it will give a
             'default_response': 'Sorry, I don\'t quite understand.',  # default response
-            'maximum_similarity_threshold': 0.75,
+            'maximum_similarity_threshold': 0.6,
             'excluded_words': bad_words
         },
 
@@ -72,13 +58,11 @@ bot = ChatBot(  # defining properties and attributes
         {
             'import_path': 'camera_adapter.CameraAdapter'
         },
-        #{
-         #   'import_path': 'mood_adapter.MoodAdapter'
-       # },
+        # {
+        #   'import_path': 'mood_adapter.MoodAdapter'
+        # },
         {
-            'import_path': 'chatterbot.logic.TimeLogicAdapter',  # this gives the bot the ability to tell time
-            'positive': time_positive,
-            'negative': time_negative
+            'import_path': 'newtime_adapter.NewTimeLogicAdapter',  # this gives the bot the ability to tell time
         }
 
     ],
