@@ -1,18 +1,15 @@
-import time
-from threading import Thread
-from difflib import SequenceMatcher
-from EmotionDetect_HaarCascade import EmotionDetect_HaarCacasde
+import logging
+import os
 
 from chatterbot import ChatBot
 from chatterbot.trainers import ChatterBotCorpusTrainer, ListTrainer
-from playsound import playsound
 from gtts import gTTS
-import os
-import logging
-import random
+from playsound import playsound
 
 global mood
 
+# Upon running for the first time, you need to edit chatbotfun\venv\Lib\site-packages\sqlalchemy\util\compat.py
+# go to line 264, replace time.clock with time.process_time()
 
 def text2speech(tts):
     speech = gTTS(text=tts, lang='en', slow=False)
@@ -69,7 +66,6 @@ bot = ChatBot(  # defining properties and attributes
     database_url='sqlite://database.sqlite3'
 )
 print('Starting bot. . . . ')
-# Thread(target=start_camera).start()
 
 while True:
     choice = input("Would you like to train the bot? Enter Y/N: ")  # train bot option
@@ -151,8 +147,7 @@ while True:
         break
 
 if sfx:
-    playsound('startup.wav')
-print('Chatbot is now active')
+    print('Chatbot is now active')
 
 while True:
     try:
@@ -164,15 +159,11 @@ while True:
             print('Chatbot: Bye. Shutting down. . . .')  # if you say these things to the bot, it will quit
             if voice:
                 text2speech('Bye. Shutting down')
-            if sfx:
-                playsound('shutdown.wav')
             break
         else:
             response = bot.get_response(request)
             print("Chatbot: ", end='')
             print(response)
-            if sfx:
-                playsound('message.wav')
             if voice:
                 tts = (str(response))
                 text2speech(tts)
